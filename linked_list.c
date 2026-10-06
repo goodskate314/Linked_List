@@ -147,5 +147,14 @@ int main() {
 	
 	delete(&stuff, -33);
 	printList(&stuff);
+	
+	// free the rest of the nodes in the list
+	Node *toFree = NULL;
+	toFree = stuff.head;
+	while (toFree != NULL) {
+		Node *next = toFree->nextNode;
+		free(toFree);
+		toFree = next;
+	}
 	return 0;
 }
