@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
+#include <math.h> // i thought i would need it ok
 #include <ctype.h>
 
 // look i know this is probably extremely inefficient and you could probably do it with like 20% of the lines i used but it works ok it took me a long time
