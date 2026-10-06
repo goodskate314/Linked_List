@@ -1,10 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <math.h> // i thought i would need it ok
-#include <ctype.h>
-
-// look i know this is probably extremely inefficient and you could probably do it with like 20% of the lines i used but it works ok it took me a long time
 
 // A node in the linked list.
 typedef struct Node {
@@ -26,90 +21,48 @@ void initList(LinkedList *list) {
 
 // Adds a new integer to the end of the linked list.
 void add(LinkedList *list, int value) {
-	Node *addedThing = malloc(sizeof(Node));
+	Node *new = malloc(sizeof(Node));
+	if (!new) { // in case memory allocation fails
+		printf("memory allocation failed :(");
+		return;
+	}
 	
-	addedThing->num = value;
-	addedThing->nextNode = NULL;
+	new->num = value;
+	new->nextNode = NULL;
 	
 	// if list is empty, assign both head and tail to value
 	if (list->head == NULL) {
-		list->head = addedThing;
-		list->bigFluffyTail = addedThing;
+		list->head = new;
+		list->bigFluffyTail = new;
 	}
 	
 	else {
-		list->bigFluffyTail->nextNode = addedThing;
-		list->bigFluffyTail = addedThing;
+		list->bigFluffyTail->nextNode = new;
+		list->bigFluffyTail = new;
 	}
 }
 
 // Removes the first node containing the given integer from the linked list.
 void delete(LinkedList *list, int value) {
-	Node *node2Delete = NULL;
-	Node *temp = list->head; // use a temporary variable to find which node to delete
-	while (temp != NULL) {
-		if (temp->num == value) {
-			node2Delete = temp;
-			break;
-		}
-		temp = temp->nextNode;
-	}
-	if (node2Delete == NULL) { // if no matches found, return list unchanged
-		return;
+	Node *previous = NULL;
+	Node *current = list->head; // keep track of both the node to delete and the previous node
+	while ((current != NULL) && (current->num != value)) {
+		previous = current;
+		current = current->nextNode;
 	}
 	
-	if (node2Delete == list->head) { // edge case for deleting head
-		list->head = list->head->nextNode;
-		free(node2Delete);
-		return;
-	}
+	if (current == NULL) return;  // if no matches found/list is empty, return list unchanged
+	if (previous) previous->nextNode = current->nextNode; // skip the node we're deleting
+	else list->head = current->nextNode; // unless we're deleting the head, in that case update the head
+	if (list->bigFluffyTail == current) list->bigFluffyTail = previous; // update tail if old tail was deleted
 	
-	if (node2Delete == list->bigFluffyTail) { // edge case for deleting tail
-		Node *temp2 = list->head;
-		Node *nodeBeforeDelete = NULL;
-        	while (temp2 != NULL) {
-                	if (temp2->nextNode == node2Delete) {
-                        	nodeBeforeDelete = temp2;
-                        	break;
-                	}
-                	temp2 = temp2->nextNode;
-        	}
-		list->bigFluffyTail = nodeBeforeDelete;
-		nodeBeforeDelete->nextNode = NULL;
-		free(node2Delete);
-		return;
-	}
-	
-	// standard method
-	// find node directly before node to delete
-	Node *temp3 = list->head;
-	Node *nodeBeforeDelete = NULL;
-	while (temp3 != NULL) {
-		if (temp3->nextNode == node2Delete) {
-			nodeBeforeDelete = temp3;
-			break;
-		}
-		temp3 = temp3->nextNode;
-	}
-	if (nodeBeforeDelete == NULL) { // this should (hopefully) never happen
-		printf("if this error message shows, you're cooked. im sorry.\n");
-	}
-	
-	// find node directly after node to delete
-	Node *nodeAfterDelete = NULL;
-	nodeAfterDelete = node2Delete->nextNode;
-	
-	// update pointers and free node to delete
-	nodeBeforeDelete->nextNode = nodeAfterDelete;
-	free(node2Delete);
+	free(current);
 }
 
 // Prints the contents of the linked list from head to tail.
 void printList(LinkedList *list) {
-	Node *currentNum = list->head;
-	while (currentNum != NULL) {
-		printf("%d -> ", currentNum->num);
-		currentNum = currentNum->nextNode;
+	for (Node *n = list->head; n; n = n->nextNode) {
+		printf("%d -> ", n->num);
 	}
 	printf("NULL\n");
 }
@@ -149,12 +102,12 @@ int main() {
 	printList(&stuff);
 	
 	// free the rest of the nodes in the list
-	Node *toFree = NULL;
-	toFree = stuff.head;
-	while (toFree != NULL) {
-		Node *next = toFree->nextNode;
-		free(toFree);
-		toFree = next;
+	while (stuff.head) {
+		Node *goAway = stuff.head;
+		stuff.head = goAway->nextNode;
+		free(goAway);
 	}
+	stuff.bigFluffyTail = NULL;
+	
 	return 0;
 }
